@@ -56,8 +56,9 @@ int main() {
     };
 
     // Send GTP message to SGW-C
-    if (sendto(sockfd, gtpMessage, sizeof(gtpMessage), 0,
-               (struct sockaddr*)&serverAddr, sizeof(serverAddr)) < 0) {
+    ssize_t sentBytes = sendto(sockfd, gtpMessage, sizeof(gtpMessage), 0,
+                               (struct sockaddr*)&serverAddr, sizeof(serverAddr));
+    if (sentBytes < 0) {
         std::cerr << "Failed to send GTP message" << std::endl;
         close(sockfd);
         return -1;
