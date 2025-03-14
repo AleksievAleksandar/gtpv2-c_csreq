@@ -1,0 +1,3 @@
+/home/aleksandar/projects/gtp-c_create_session_request/build/CMakeFiles/gtp-c-csr.dir
+/home/aleksandar/projects/gtp-c_create_session_request/build/CMakeFiles/edit_cache.dir
+/home/aleksandar/projects/gtp-c_create_session_request/build/CMakeFiles/rebuild_cache.dir
