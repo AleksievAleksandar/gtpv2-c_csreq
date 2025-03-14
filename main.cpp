@@ -29,24 +29,30 @@ int main() {
     // Construct a valid GTPv2-C Create Session Request
     unsigned char gtpMessage[] = {
         // GTPv2-C Header (8 bytes)
-        0x48, 0x20, 0x00, 0x3C,  // Flags, Msg Type (0x20 = Create Session Request), Length
+        0x48, 0x20, 0x00, 0x32,  // Flags, Msg Type (0x20 = Create Session Request), Length (0x32 = 50 bytes)
         0x12, 0x34, 0x56, 0x78,  // TEID (Tunnel Endpoint Identifier)
         0x00, 0x01, 0x00, 0x10,  // Sequence Number, Spare
 
         // IMSI (IE Type = 0x01, Length = 8)
-        0x01, 0x08, 0x21, 0x43, 0x65, 0x87, 0x09, 0xAB, 0xCD, 0xEF,
+        0x01, 0x00, 0x08, 0x00,  // IE Type (0x01), Length (8 bytes), Instance (0)
+        0x21, 0x43, 0x65, 0x87, 0x09, 0xAB, 0xCD, 0xEF,  // IMSI value
 
-        // APN (IE Type = 0x57, Length = 9)
-        0x57, 0x09, 'i', 'n', 't', 'e', 'r', 'n', 'e', 't',
+        // APN (IE Type = 0x57, Length = 8)
+        0x57, 0x00, 0x08, 0x00,  // IE Type (0x57), Length (8 bytes), Instance (0)
+        'i', 'n', 't', 'e', 'r', 'n', 'e', 't',  // APN string ("internet")
 
         // PDN Type (IE Type = 0x79, Length = 1)
-        0x79, 0x01, 0x02,  // PDN Type = IPv4
+        0x79, 0x00, 0x01, 0x00,  // IE Type (0x79), Length (1 byte), Instance (0)
+        0x02,  // PDN Type (IPv4)
 
-        // SGW TEID (IE Type = 0x50, Length = 4)
-        0x50, 0x04, 0x12, 0x34, 0x56, 0x78,
+        // SGW TEID for Uplink (IE Type = 0x50, Length = 4)
+        0x50, 0x00, 0x04, 0x00,  // IE Type (0x50), Length (4 bytes), Instance (0)
+        0x12, 0x34, 0x56, 0x79,  // TEID value
 
-        // PAA (UE IP Address) (IE Type = 0x4F, Length = 4)
-        0x4F, 0x05, 0x0A, 0x0A, 0x00, 0x01,  // IPv4: 10.10.0.1
+        // PAA (UE IP Address) (IE Type = 0x4F, Length = 5)
+        0x4F, 0x00, 0x05, 0x00,  // IE Type (0x4F), Length (5 bytes), Instance (0)
+        0x01,  // PDN Type (IPv4)
+        0x0A, 0x0A, 0x00, 0x01   // UE IPv4 Address: 10.10.0.1
     };
 
     // Send GTP message to SGW-C
