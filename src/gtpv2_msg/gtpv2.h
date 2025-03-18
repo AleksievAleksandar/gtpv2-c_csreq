@@ -1,33 +1,12 @@
-#include <iostream>
+#ifndef GTPv2_H
+#define GTPv2_H
+
 #include <cstring>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
+#include <cassert>
+#include <iostream>
 
-#define SMF_IP "192.168.96.231" // SMF IP
-#define GTP_PORT 2123  // Standard GTP-C port
-
-int main() {
-    int sockfd;
-    struct sockaddr_in serverAddr;
-    char buffer[1024];
-
-    // Create UDP socket
-    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sockfd < 0) {
-        std::cerr << "Socket creation failed" << std::endl;
-        return -1;
-    }
-
-    // Configure SGW-C address
-    memset(&serverAddr, 0, sizeof(serverAddr));
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(GTP_PORT);
-    inet_pton(AF_INET, SMF_IP, &serverAddr.sin_addr);
-
-   // Construct a valid GTPv2-C Create Session Request
-   unsigned char gtpMessage[] = {
+//    Construct a valid GTPv2-C Create Session Request
+unsigned char gtpMessage[] = {
 
     0x48, 0x20, 0x00, 0xca, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00, 0x08, 0x00,
     0x22, 0x02, 0x01, 0x12, 0x14, 0x64, 0x14, 0xf8, 0x4c, 0x00, 0x08, 0x00, 0x79, 0x52, 0x95, 0x00,
@@ -43,6 +22,122 @@ int main() {
     0xc0, 0xa8, 0x30, 0x3b, 0x50, 0x00, 0x16, 0x00, 0x49, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
+
+struct Header
+{
+    // GTPv2 Header (8 bytes)
+    #define HEADER_SIZE 8
+    Header()
+        : m_flags {0x48}                    // Flags: Version(2) | P(0) | T(1) | Spare(000) = 01001000
+        , m_msg_type {0x20}                 // Message Type: Create Session Request (0x20)
+        , m_msg_length {0x00, 0xCA}         // Message Length: 202 bytes
+        , m_teid {0x00, 0x00, 0x00, 0x00}   // TEID (Tunnel Endpoint Identifier) = 0 (Sender TEID)
+    {
+        static_assert(sizeof(*this) == HEADER_SIZE);
+    }
+
+    void set_flags(void* p_flags)
+    {
+        m_flags = *(uint8_t*)p_flags;
+    }
+
+    void set_msg_type(void* p_msg_type)
+    {
+        m_msg_type = *(uint8_t*)p_msg_type;
+    }
+
+    void set_msg_length(void* p_length)
+    {
+        memcpy(m_msg_length, p_length, sizeof(m_msg_length));
+    }
+
+    void set_teid(void* p_teid)
+    {
+        memcpy(m_teid, p_teid, sizeof(m_teid));
+    }
+
+    uint8_t m_flags;
+    uint8_t m_msg_type;
+    uint8_t m_msg_length[2];
+    uint8_t m_teid[4];
+
+} __attribute__((packed));
+
+struct Sequence_number
+{
+    // Sequence Number & Spare (4 bytes)
+    Sequence_number()
+        : m_sequence_number {0x00, 0x00, 0x02}  // Sequence Number: 2
+        , m_spare {0x00}                        // Spare
+    {}
+
+    void set_sequence_number(void* p_seq_num)
+    {
+        memcpy(m_sequence_number, p_seq_num, sizeof(m_sequence_number));
+    }
+
+    uint8_t m_sequence_number[3];
+private:
+    uint8_t m_spare;
+
+} __attribute__((packed));
+
+struct IMSI
+{
+    // IMSI (International Mobile Subscriber Identity) IE (12 bytes)
+    IMSI()
+    : m_imsi_ie_type {0x01}                                     // IMSI IE Type (0x01)
+    , m_length {0x00, 0x08}                                     // Length: 8 bytes
+    , m_spare {0x00}                                            // Spare
+    , m_imsi {0x22, 0x02, 0x01, 0x12, 0x14, 0x64, 0x14, 0xf8}   // IMSI value (encoded)
+    {}
+
+    void set_imsi_ie_type(void* p_imsi_ie_type)
+    {
+        m_imsi_ie_type = *(uint8_t*)p_imsi_ie_type;
+    }
+
+    void set_imsi(void* p_imsi)
+    {
+        memcpy(m_imsi, p_imsi, sizeof(m_imsi));
+    }
+
+    void print_IMSI()
+    {
+        for (int32_t i = 0; i < 8; i++) 
+        {
+            // Extract low and high nibbles (correct order for IMSI decoding)
+            int32_t low_nibble = m_imsi[i] & 0x0F;         // First digit
+            int32_t high_nibble = (m_imsi[i] & 0xF0) >> 4; // Second digit
+
+            // Print low nibble first
+            printf("%d", low_nibble);
+
+            // Print high nibble (ignore if it's 0xF, which is padding)
+            if (high_nibble != 0xF) 
+            {
+                printf("%d", high_nibble);
+            }
+        }
+        printf("\n");
+    }
+
+    uint8_t m_imsi_ie_type;
+    uint8_t m_length[2];
+private:
+    uint8_t m_spare;
+public:
+    uint8_t m_imsi[8];
+
+} __attribute__((packed));
+
+struct GTPv2
+{
+    Header m_header;
+    Sequence_number m_seq_num;
+    IMSI m_imsi;
+
+} __attribute__((packed));
 
 unsigned char gtpMessage2[] = {
 
@@ -159,27 +254,4 @@ unsigned char gtpMessage2[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 // Extra Bytes
 };
 
-    // Send GTP message to SGW-C
-    ssize_t sentBytes = sendto(sockfd, gtpMessage2, sizeof(gtpMessage2), 0,
-                               (struct sockaddr*)&serverAddr, sizeof(serverAddr));
-    if (sentBytes < 0) {
-        std::cerr << "Failed to send GTP message" << std::endl;
-        close(sockfd);
-        return -1;
-    }
-
-    std::cout << "Create Session Request sent to SMF. Sent bytes: " << sentBytes << std::endl;
-
-    // Receive response from SGW-C
-    socklen_t addrLen = sizeof(serverAddr);
-    int recvLen = recvfrom(sockfd, buffer, sizeof(buffer), 0, (struct sockaddr*)&serverAddr, &addrLen);
-    if (recvLen > 0) {
-        std::cout << "Received response from SGW-C" << std::endl;
-    } else {
-        std::cerr << "Failed to receive response" << std::endl;
-    }
-
-    // Close socket
-    close(sockfd);
-    return 0;
-}
+#endif
