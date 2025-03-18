@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define SGW_C_IP "192.168.100.2" // SGW Control Plane IP
+#define SGW_C_IP "192.168.96.231" // SMF IP
 #define GTP_PORT 2123  // Standard GTP-C port
 
 int main() {
@@ -64,7 +64,7 @@ int main() {
         return -1;
     }
 
-    std::cout << "Create Session Request sent to SGW-C" << std::endl;
+    std::cout << "Create Session Request sent to SMF. Sent bytes: " << sentBytes << std::endl;
 
     // Receive response from SGW-C
     socklen_t addrLen = sizeof(serverAddr);
