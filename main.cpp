@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define SGW_C_IP "192.168.96.231" // SMF IP
+#define SMF_IP "192.168.96.231" // SMF IP
 #define GTP_PORT 2123  // Standard GTP-C port
 
 int main() {
@@ -24,7 +24,7 @@ int main() {
     memset(&serverAddr, 0, sizeof(serverAddr));
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port = htons(GTP_PORT);
-    inet_pton(AF_INET, SGW_C_IP, &serverAddr.sin_addr);
+    inet_pton(AF_INET, SMF_IP, &serverAddr.sin_addr);
 
     // Construct a valid GTPv2-C Create Session Request
     unsigned char gtpMessage[] = {
