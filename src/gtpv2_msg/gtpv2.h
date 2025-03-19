@@ -131,11 +131,174 @@ public:
 
 } __attribute__((packed));
 
+struct MSISDN
+{
+    // IMSI (International Mobile Subscriber Identity) IE (12 bytes)
+    MSISDN()
+    : m_msisdn_ie_type {0x4c}                                   // MSISDN IE Type (0x4c)
+    , m_length {0x00, 0x08}                                     // Length: 8 bytes
+    , m_spare {0x00}                                            // Spare
+    , m_msisdn {0x79, 0x52, 0x95, 0x00, 0x00, 0x00, 0x00, 0xf0} // MSISDN value
+    {}
+
+    void set_msisdn_ie_type(void* p_msisdn_ie_type)
+    {
+        m_msisdn_ie_type = *(uint8_t*)p_msisdn_ie_type;
+    }
+
+    void set_msisdn(void* p_msisdn)
+    {
+        memcpy(m_msisdn, p_msisdn, sizeof(m_msisdn));
+    }
+
+    void print_MSISDN()
+    {
+        for (int32_t i = 0; i < 8; i++) 
+        {
+            // Extract low and high nibbles (correct order for MSISDN decoding)
+            int32_t low_nibble = m_msisdn[i] & 0x0F;         // First digit
+            int32_t high_nibble = (m_msisdn[i] & 0xF0) >> 4; // Second digit
+
+            // Print low nibble first
+            printf("%d", low_nibble);
+
+            // Print high nibble (ignore if it's 0xF, which is padding)
+            if (high_nibble != 0xF) 
+            {
+                printf("%d", high_nibble);
+            }
+        }
+        printf("\n");
+    }
+
+    uint8_t m_msisdn_ie_type;
+    uint8_t m_length[2];
+private:
+    uint8_t m_spare;
+public:
+    uint8_t m_msisdn[8];
+
+} __attribute__((packed));
+
+struct MEI
+{
+    // IMSI (International Mobile Subscriber Identity) IE (12 bytes)
+    MEI()
+    : m_mei_ie_type {0x4b}                                   // MEI IE Type (0x4b)
+    , m_length {0x00, 0x08}                                  // Length: 8 bytes
+    , m_spare {0x00}                                         // Spare
+    , m_mei {0x21, 0x43, 0x05, 0x01, 0x00, 0x00, 0x00, 0xf0} // MEI value
+    {}
+
+    void set_mei_ie_type(void* p_mei_ie_type)
+    {
+        m_mei_ie_type = *(uint8_t*)p_mei_ie_type;
+    }
+
+    void set_mei(void* p_mei)
+    {
+        memcpy(m_mei, p_mei, sizeof(m_mei));
+    }
+
+    void print_MEI()
+    {
+        for (int32_t i = 0; i < 8; i++) 
+        {
+            // Extract low and high nibbles (correct order for MEI decoding)
+            int32_t low_nibble = m_mei[i] & 0x0F;         // First digit
+            int32_t high_nibble = (m_mei[i] & 0xF0) >> 4; // Second digit
+
+            // Print low nibble first
+            printf("%d", low_nibble);
+
+            // Print high nibble (ignore if it's 0xF, which is padding)
+            if (high_nibble != 0xF) 
+            {
+                printf("%d", high_nibble);
+            }
+        }
+        printf("\n");
+    }
+
+    uint8_t m_mei_ie_type;
+    uint8_t m_length[2];
+private:
+    uint8_t m_spare;
+public:
+    uint8_t m_mei[8];
+
+} __attribute__((packed));
+
+struct Serving_Network
+{
+    // Serving Network (3GPP) IE (17 bytes)
+    Serving_Network()
+        : m_serving_net_ie_type {0x5} // Serving Network IE Type (0x56)
+        , m_serving_net_length {0x00, 0x0d} // Length: 13 bytes
+        , m_spare {0x00} // Spare
+        , m_serving_net {0x0c, 0x13, 0x01, 0x84, 0xff, 0xfe, 0x00, 0xff, 0x13, 0x01, 0x84, 0xd8, 0x0b} // MCC/MNC encoded
+    {}
+
+    void set_serving_net(void* p_serving_net)
+    {
+        memcpy(m_serving_net, p_serving_net, sizeof(m_serving_net));
+    }
+
+    uint8_t m_serving_net_ie_type;
+    uint8_t m_serving_net_length[2];
+private:
+    uint8_t m_spare;
+public:
+    uint8_t m_serving_net[13];
+} __attribute__((packed));
+
+struct RAT
+{
+    // RAT Type (Radio Access Technology) IE (6 bytes)
+    RAT()
+        : m_rat_ie_type {0x53} // RAT Type IE Type (0x53)
+        , m_rat_length {0x00, 0x03} // Length: 3 bytes
+        , m_spare {0x00} // Spare
+        , m_rat {0x22, 0xf2} // RAT Type Value
+    {}
+
+    uint8_t m_rat_ie_type;
+    uint8_t m_rat_length[2];
+private:
+    uint8_t m_spare;
+public:
+    uint8_t m_rat[2];
+
+} __attribute__((packed));
+
+struct Flags
+{
+    // Indication Flags (6 bytes)
+    Flags()
+        : m_flags_ie_type {0x10} // Indication IE Type (0x10)
+        , m_flags {0x52, 0x00, 0x01, 0x00, 0x06} // Flags (various indicators)
+    {}
+
+    void set_flags(void* p_flags)
+    {
+        memcpy(m_flags, p_flags, sizeof(m_flags));
+    }
+
+    uint8_t m_flags_ie_type;
+    uint8_t m_flags[5];
+
+} __attribute__((packed));
+
 struct GTPv2
 {
     Header m_header;
     Sequence_number m_seq_num;
     IMSI m_imsi;
+    MSISDN m_msisdn;
+    MEI m_mei;
+    Serving_Network m_serving_net;
+    RAT m_rat;
+    Flags m_flags;
 
 } __attribute__((packed));
 
@@ -151,37 +314,37 @@ unsigned char gtpMessage2[] = {
     0x00, 0x00, 0x02, // Sequence Number: 2
     0x00, // Spare
 
-    // IMSI (International Mobile Subscriber Identity) IE (8 bytes)
+    // IMSI (International Mobile Subscriber Identity) IE (12 bytes)
     0x01, // IMSI IE Type (0x01)
     0x00, 0x08, // Length: 8 bytes
     0x00, // Spare
     0x22, 0x02, 0x01, 0x12, 0x14, 0x64, 0x14, 0xf8, // IMSI value (encoded)
 
-    // MSISDN (Mobile Subscriber ISDN Number) IE (8 bytes)
+    // MSISDN (Mobile Subscriber ISDN Number) IE (12 bytes)
     0x4c, // MSISDN IE Type (0x4c)
     0x00, 0x08, // Length: 8 bytes
     0x00, // Spare
     0x79, 0x52, 0x95, 0x00, 0x00, 0x00, 0x00, 0xf0, // MSISDN value
 
-    // MEI (Mobile Equipment Identity) IE (8 bytes)
+    // MEI (Mobile Equipment Identity) IE (12 bytes)
     0x4b, // MEI IE Type (0x4b)
     0x00, 0x08, // Length: 8 bytes
     0x00, // Spare
     0x21, 0x43, 0x05, 0x01, 0x00, 0x00, 0x00, 0xf0, // IMEI value
 
-    // Serving Network (3GPP) IE (13 bytes)
+    // Serving Network (3GPP) IE (17 bytes)
     0x56, // Serving Network IE Type (0x56)
     0x00, 0x0d, // Length: 13 bytes
-    0x00, 0x0c, // Spare
-    0x13, 0x01, 0x84, 0xff, 0xfe, 0x00, 0xff, 0x13, 0x01, 0x84, 0xd8, 0x0b, // MCC/MNC encoded
+    0x00, // Spare
+    0x0c, 0x13, 0x01, 0x84, 0xff, 0xfe, 0x00, 0xff, 0x13, 0x01, 0x84, 0xd8, 0x0b, // MCC/MNC encoded
 
-    // RAT Type (Radio Access Technology) IE (3 bytes)
+    // RAT Type (Radio Access Technology) IE (6 bytes)
     0x53, // RAT Type IE Type (0x53)
     0x00, 0x03, // Length: 3 bytes
     0x00, // Spare
     0x22, 0xf2, // RAT Type Value
 
-    // Indication Flags (2 bytes)
+    // Indication Flags (6 bytes)
     0x10, // Indication IE Type (0x10)
     0x52, 0x00, 0x01, 0x00, 0x06, // Flags (various indicators)
 
