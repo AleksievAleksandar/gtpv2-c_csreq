@@ -289,6 +289,140 @@ struct Flags
 
 } __attribute__((packed));
 
+struct F_TEID
+{
+    // F-TEID for Control Plane (13 bytes)
+    F_TEID()
+        : m_f_teid_ie_type {0x57}                                   // F-TEID IE Type (0x57)
+        , m_f_teid_length {0x00, 0x09}                              // Length: 9 bytes
+        , m_spare {0x00}                                            // Spare
+        , m_interface_type_and_teid {0x86, 0x00, 0xff, 0x00, 0x01}  // Interface Type and TEID
+        , m_ip {0xc0, 0xa8, 0x60, 0xef}                             // IPv4 Address (192.168.96.239)
+    {}
+
+    void set_interface_and_teid(void* p_interface_and_teid)
+    {
+        memcpy(m_interface_type_and_teid, p_interface_and_teid, sizeof(m_interface_type_and_teid));
+    }
+
+    void set_ip(void* p_ip)
+    {
+        memcpy(m_ip, p_ip, sizeof(m_ip));
+    }
+
+    void print_IP()
+    {
+        // IPv4 address starts at byte 5
+        printf("IPv4 Address: %d.%d.%d.%d\n", m_ip[0], m_ip[1], m_ip[2], m_ip[3]);
+    }
+
+    uint8_t m_f_teid_ie_type;
+    uint8_t m_f_teid_length[2];
+private:
+    uint8_t m_spare;
+public:
+    uint8_t m_interface_type_and_teid[5];
+    uint8_t m_ip[4];
+
+} __attribute__((packed));
+
+struct APN
+{
+    // APN (Access Point Name) IE (32 bytes)
+    APN()
+        : m_apn_ie_type {0x47}                                          // APN IE Type (0x47)
+        , m_apn_length {0x00, 0x1c}                                     // Length: 28 bytes
+        , m_spare {0x00}                                                // Spare
+        , m_apn {0x08, 0x69, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x65, 0x74}  // "internet"
+        , m_mnc {0x06, 0x6d, 0x6e, 0x63, 0x30, 0x30, 0x31}              // "mnc001"
+        , m_mcc {0x06, 0x6d, 0x63, 0x63, 0x32, 0x32, 0x32}              // "mcc222"
+        , m_gprs {0x04, 0x67, 0x70, 0x72, 0x73}                         // "gprs"
+    {}
+
+    void set_apn(void* p_apn)
+    {
+        memcpy(m_apn, p_apn, sizeof(m_apn));
+    }
+
+    void set_mnc(void* p_mnc)
+    {
+        memcpy(m_mnc, p_mnc, sizeof(m_mnc));
+    }
+
+    void set_mcc(void* p_mcc)
+    {
+        memcpy(m_mcc, p_mcc, sizeof(m_mcc));
+    }
+
+    void set_gprs(void* p_gprs)
+    {
+        memcpy(m_gprs, p_gprs, sizeof(m_gprs));
+    }
+
+    void print_APN()
+    {
+        for (size_t i = 1; i <= m_apn[0]; i++)
+        {
+            printf("%c", m_apn[i]);
+        }
+        printf(".");
+
+        for (size_t i = 1; i <= m_mnc[0]; i++)
+        {
+            printf("%c", m_mnc[i]);
+        }
+        printf(".");
+
+        for (size_t i = 1; i <= m_mcc[0]; i++)
+        {
+            printf("%c", m_mcc[i]);
+        }
+        printf(".");
+
+        for (size_t i = 1; i <= m_gprs[0]; i++)
+        {
+            printf("%c", m_gprs[i]);
+        }
+
+        printf("\n");
+    }
+
+    uint8_t m_apn_ie_type;
+    uint8_t m_apn_length[2];
+    uint8_t m_spare;
+    uint8_t m_apn[9]; // first idx is the length
+    uint8_t m_mnc[7]; // first idx is the length
+    uint8_t m_mcc[7]; // first idx is the length
+    uint8_t m_gprs[5]; // first idx is the length
+
+} __attribute__((packed));
+
+struct Selection_Mode
+{
+    // Selection Mode (2 bytes)
+    Selection_Mode()
+        : m_ie_type {0x80} // Selection Mode IE Type (0x80)
+        , m_value {0x00, 0x01, 0x00, 0x00}
+    {}
+
+    uint8_t m_ie_type;
+    uint8_t m_value[4];
+
+} __attribute__((packed));
+
+struct PDN_Type
+{
+    // PDN Type (2 bytes)
+    PDN_Type()
+        : m_ie_type {0x63} // PDN Type IE Type (0x63)
+        , m_value {0x00, 0x01, 0x00, 0x01} // IPv4
+    {}
+
+    uint8_t m_ie_type;
+    uint8_t m_value[4];
+
+} __attribute__((packed));
+
 struct GTPv2
 {
     Header m_header;
@@ -299,6 +433,10 @@ struct GTPv2
     Serving_Network m_serving_net;
     RAT m_rat;
     Flags m_flags;
+    F_TEID m_f_teid;
+    APN m_apn;
+    Selection_Mode m_selection_mode;
+    PDN_Type m_pdn;
 
 } __attribute__((packed));
 

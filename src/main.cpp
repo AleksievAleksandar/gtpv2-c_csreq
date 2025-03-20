@@ -49,6 +49,12 @@ int main() {
     GTPv2 gtp;
     printf("Header: %lu\n", sizeof(gtp));
     
+    F_TEID f_teid;
+    f_teid.print_IP();
+
+    APN apn;
+    apn.print_APN();
+
     char arr[2];
     printf("arr: %lu\n", sizeof(arr));
 
