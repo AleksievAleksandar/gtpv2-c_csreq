@@ -28,7 +28,7 @@ int main() {
     serverAddr.sin_port = htons(GTP_PORT);
     inet_pton(AF_INET, SMF_IP, &serverAddr.sin_addr);
 
-    if (sizeof(gtpMessage) != sizeof(gtpMessage2))
+    if (sizeof(gtpMessage) != sizeof(gtpMessage2)) //206 bytes
     {
         std::cerr << "ERROR -> the two msgs are with different sizes. gtpMessage: "
                                             << sizeof(gtpMessage) << " | gtpMessage2: " << sizeof(gtpMessage2) << '\n';

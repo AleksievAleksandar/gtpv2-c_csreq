@@ -423,6 +423,82 @@ struct PDN_Type
 
 } __attribute__((packed));
 
+struct PDN_Addr_alloc
+{
+    // PAA (PDN Address Allocation) IE (5 bytes)
+    PDN_Addr_alloc()
+        : m_ie_type {0x4f}                  // PAA IE Type (0x4f)
+        , m_length {0x00, 0x05}             // Length: 5 bytes
+        , m_spare {0x00}                    // Spare
+        , m_type {0x01}                     // IPv4 Type
+        , m_addr {0x00, 0x00, 0x00, 0x00}   // IPv4 Address (0.0.0.0)
+    {}
+
+    void set_type(void* p_type)
+    {
+        m_type = *(uint8_t*)p_type;
+    }
+
+    void set_addr(void* p_addr)
+    {
+        memcpy(m_addr, p_addr, sizeof(m_addr));
+    }
+
+    uint8_t m_ie_type;
+    uint8_t m_length[2];
+    uint8_t m_spare;
+    uint8_t m_type;
+    uint8_t m_addr[4];
+} __attribute__((packed));
+
+struct APN_Restriction
+{
+    // Recovery (1 byte)
+    APN_Restriction()
+        : m_ie_type {0x7f} // Recovery IE Type (0x7f)
+        , m_length {0x00, 0x01}
+        , m_flags {0x00}
+        , m_restrictions {0x00}
+    {}
+
+    uint8_t m_ie_type;
+    uint8_t m_length[2];
+    uint8_t m_flags;
+    uint8_t m_restrictions;
+
+} __attribute__((packed));
+
+struct Aggregate_Max_Bit_Rate
+{
+    // AMBR (Aggregated Maximum Bitrate) IE (8 bytes)
+    Aggregate_Max_Bit_Rate()
+        : m_ie_type {0x48} // AMBR IE Type (0x48)
+        , m_length {0x00, 0x08} // Length: 8 bytes
+        , m_spare {0x00} // Spare
+        , m_uplink {0x11, 0x11, 0x11, 0x11} // UL-AMBR
+        , m_downlink {0x22, 0x22, 0x22, 0x22} // DL-AMBR
+    {}
+    
+    void set_uplink(void* p_uplink)
+    {
+        memcpy(m_uplink, p_uplink, sizeof(m_uplink));
+    }
+
+    void set_downlink(void* p_downlink)
+    {
+        memcpy(m_downlink, p_downlink, sizeof(m_downlink));
+    }
+
+    uint8_t m_ie_type;
+    uint8_t m_length[2];
+private:
+    uint8_t m_spare;
+public:
+    uint8_t m_uplink[4];
+    uint8_t m_downlink[4];
+
+} __attribute__((packed));
+
 struct GTPv2
 {
     Header m_header;
@@ -437,6 +513,9 @@ struct GTPv2
     APN m_apn;
     Selection_Mode m_selection_mode;
     PDN_Type m_pdn;
+    PDN_Addr_alloc m_pdn_alloc;
+    APN_Restriction m_apn_restriction;
+    Aggregate_Max_Bit_Rate m_bit_rate;
 
 } __attribute__((packed));
 
