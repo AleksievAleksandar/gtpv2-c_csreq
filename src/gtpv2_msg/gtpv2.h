@@ -295,7 +295,7 @@ struct F_TEID
     F_TEID()
         : m_f_teid_ie_type {0x57}                                   // F-TEID IE Type (0x57)
         , m_f_teid_length {0x00, 0x09}                              // Length: 9 bytes
-        , m_spare {0x00}                                            // Spare
+        , m_flags {0x00}                                            // Spare
         , m_interface_type_and_teid {0x86, 0x00, 0xff, 0x00, 0x01}  // Interface Type and TEID
         , m_ip {0xc0, 0xa8, 0x60, 0xef}                             // IPv4 Address (192.168.96.239)
     {}
@@ -318,9 +318,7 @@ struct F_TEID
 
     uint8_t m_f_teid_ie_type;
     uint8_t m_f_teid_length[2];
-private:
-    uint8_t m_spare;
-public:
+    uint8_t m_flags;
     uint8_t m_interface_type_and_teid[5];
     uint8_t m_ip[4];
 
@@ -501,6 +499,80 @@ public:
 
 } __attribute__((packed));
 
+struct EBI
+{
+    // EBI (EPS Bearer ID) (2 bytes)
+    EBI()
+        : m_ie_type {0x49} // EBI IE Type (0x49)
+        , m_length {0x00, 0x01} // Length: 1 byte
+        , m_flags {0x00} // Spare
+        , m_id {0x05} // EBI Value
+    {}
+
+    uint8_t m_ie_type;
+    uint8_t m_length[2];
+    uint8_t m_flags;
+    uint8_t m_id;
+
+} __attribute__((packed));
+
+struct Bearer_Level_Quality_of_Service
+{
+    // Bearer QoS (22 bytes)
+    Bearer_Level_Quality_of_Service()
+        : m_ie_type {0x50} // Bearer QoS IE Type (0x50)
+        , m_length {0x00, 0x16} // Length: 22 bytes
+        , m_flags {0x00} // Flags
+        , m_pci {0x49} //PCI
+        , m_label {0xff} // Label
+        , m_mbr_upl {0x00, 0x00, 0x00, 0x00, 0x00} // Max bit rate for uplink
+        , m_mbr_down {0x00, 0x00, 0x00, 0x00, 0x00} // Max bit rate for downlink
+        , m_guaranteed_mbr_upl {0x00, 0x00, 0x00, 0x00, 0x00} // Guaranteed bit rate for uplink
+        , m_guaranteed_mbr_down {0x00, 0x00, 0x00, 0x00, 0x00} // Guaranteed bit rate for downlink
+    {}
+
+    uint8_t m_ie_type;
+    uint8_t m_length[2];
+    uint8_t m_flags;
+    uint8_t m_pci;
+    uint8_t m_label;
+    uint8_t m_mbr_upl[5];
+    uint8_t m_mbr_down[5];
+    uint8_t m_guaranteed_mbr_upl[5];
+    uint8_t m_guaranteed_mbr_down[5];
+    
+} __attribute__((packed));
+
+struct Bearer_Ctx
+{
+    // Bearer Contexts (44 bytes)
+    Bearer_Ctx()
+        : m_ie_type {0x5d} // Bearer Context IE Type (0x5d)
+        , m_length {0x00, 0x2c} // Length: 44 bytes
+        , m_flags {0x00}
+        {
+            m_f_teid.m_f_teid_ie_type = 0x57;
+            m_f_teid.m_f_teid_length[0] = 0x00;
+            m_f_teid.m_f_teid_length[0] = 0x09;
+            m_f_teid.m_flags = 0x02;
+
+            uint8_t l_interface[] {0x84, 0x00, 0xaf, 0xff, 0x01};
+            uint8_t l_ip[] {0xc0, 0xa8, 0x30, 0x3b};
+
+            m_f_teid.set_interface_and_teid(l_interface);
+            m_f_teid.set_ip(l_ip);
+        }
+
+    uint8_t m_ie_type;
+    uint8_t m_length[2];
+    u_int8_t m_flags;
+
+    EBI m_ebi;
+    F_TEID m_f_teid;
+    Bearer_Level_Quality_of_Service m_bearer_qos;
+
+} __attribute__((packed));
+
 struct GTPv2
 {
     Header m_header;
@@ -518,6 +590,7 @@ struct GTPv2
     PDN_Addr_alloc m_pdn_alloc;
     APN_Restriction m_apn_restriction;
     Aggregate_Max_Bit_Rate m_bit_rate;
+    Bearer_Ctx m_bearer_ctx;
 
 } __attribute__((packed));
 

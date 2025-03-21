@@ -34,6 +34,31 @@ int main() {
                                             << sizeof(gtpMessage) << " | gtpMessage2: " << sizeof(gtpMessage2) << '\n';
     }
 
+    if (sizeof(gtpMessage2) != sizeof(GTPv2)) //206 bytes
+    {
+        std::cerr << "ERROR -> the two msgs are with different sizes. gtpMessage: "
+                                            << sizeof(gtpMessage) << " | gtpMessage2: " << sizeof(gtpMessage2) << '\n';
+    }
+
+    GTPv2 l_gtp;
+    uint8_t l_arr[206]{};
+    memcpy(l_arr, gtpMessage2, sizeof(gtpMessage2));
+    for (uint32_t i = 0; i < sizeof(gtpMessage2); i++)
+    {
+        if (l_arr[i] != gtpMessage2[i])
+        {
+            printf("i = %u\n", i);
+            printf("arr = %u | msg = %u\n", l_arr[i], gtpMessage2[i]);
+            break;
+        }
+        
+    }
+    
+    if (memcmp(gtpMessage2, gtpMessage, sizeof(GTPv2)))
+    {
+        printf("FUCK\n");
+    }
+
     Header h;
     uint32_t teid {111111};
     h.set_teid(&teid);
