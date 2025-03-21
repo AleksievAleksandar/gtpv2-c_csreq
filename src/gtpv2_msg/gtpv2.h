@@ -446,7 +446,9 @@ struct PDN_Addr_alloc
 
     uint8_t m_ie_type;
     uint8_t m_length[2];
+private:
     uint8_t m_spare;
+public:
     uint8_t m_type;
     uint8_t m_addr[4];
 } __attribute__((packed));
