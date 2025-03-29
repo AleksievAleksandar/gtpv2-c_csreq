@@ -42,7 +42,7 @@ int main() {
 
     GTPv2 l_gtp;
     uint8_t l_arr[206]{};
-    memcpy(l_arr, gtpMessage2, sizeof(gtpMessage2));
+    memcpy(l_arr, &l_gtp, sizeof(gtpMessage2));
     for (uint32_t i = 0; i < sizeof(gtpMessage2); i++)
     {
         if (l_arr[i] != gtpMessage2[i])
@@ -54,7 +54,7 @@ int main() {
         
     }
     
-    if (memcmp(gtpMessage2, gtpMessage, sizeof(GTPv2)))
+    if (memcmp(gtpMessage2, l_arr, sizeof(GTPv2)))
     {
         printf("FUCK\n");
     }

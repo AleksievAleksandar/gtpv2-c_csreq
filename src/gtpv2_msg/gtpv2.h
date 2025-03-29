@@ -233,7 +233,7 @@ struct Serving_Network
 {
     // Serving Network (3GPP) IE (17 bytes)
     Serving_Network()
-        : m_serving_net_ie_type {0x5} // Serving Network IE Type (0x56)
+        : m_serving_net_ie_type {0x56} // Serving Network IE Type (0x56)
         , m_serving_net_length {0x00, 0x0d} // Length: 13 bytes
         , m_spare {0x00} // Spare
         , m_serving_net {0x0c, 0x13, 0x01, 0x84, 0xff, 0xfe, 0x00, 0xff, 0x13, 0x01, 0x84, 0xd8, 0x0b} // MCC/MNC encoded
