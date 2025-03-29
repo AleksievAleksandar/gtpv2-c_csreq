@@ -553,7 +553,7 @@ struct Bearer_Ctx
         {
             m_f_teid.m_f_teid_ie_type = 0x57;
             m_f_teid.m_f_teid_length[0] = 0x00;
-            m_f_teid.m_f_teid_length[0] = 0x09;
+            m_f_teid.m_f_teid_length[1] = 0x09;
             m_f_teid.m_flags = 0x02;
 
             uint8_t l_interface[] {0x84, 0x00, 0xaf, 0xff, 0x01};
