@@ -5,7 +5,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#include "gtpv2_msg/gtpv2.h"
+#include "gtpv2.h"
 
 #define SMF_IP "192.168.96.231" // SMF IP
 #define GTP_PORT 2123  // Standard GTP-C port
@@ -13,6 +13,7 @@
 int main() {
     int sockfd;
     struct sockaddr_in serverAddr;
+    struct sockaddr_in sgw;
     char buffer[1024];
 
     // Create UDP socket
@@ -20,6 +21,19 @@ int main() {
     if (sockfd < 0) {
         std::cerr << "Socket creation failed" << std::endl;
         return -1;
+    }
+
+    memset(&sgw, 0, sizeof(sgw));
+    sgw.sin_family = AF_INET;
+    sgw.sin_port = htons(2123); // Local port
+    sgw.sin_addr.s_addr = INADDR_ANY; // Your desired local IP
+
+    // Bind the socket to the chosen IP and port
+    if (bind(sockfd, (struct sockaddr*)&sgw, sizeof(sgw)) < 0)
+    {
+        perror("bind failed\n");
+        close(sockfd);
+        exit(EXIT_FAILURE);
     }
 
     // Configure SGW-C address
@@ -60,19 +74,27 @@ int main() {
     }
 
     Header h;
-    uint32_t teid {111111};
+    uint32_t teid {111116};
     h.set_teid(&teid);
+
     printf("Header: %lu length: %x\n", sizeof(h), h.m_msg_type);
+    printf("Header: %lu length: %u\n", sizeof(h), h.get_teid());
     for (size_t i = 0; i < 4; i++)
     {
         printf("Header: %lu length: %x\n", sizeof(h), h.m_teid[i]);
     }
 
+    // uint16_t a {512};
+    // uint32_t a {66000};
+    // h.set_msg_length(&a);
+    printf("header msg length: %u\n", h.get_msg_length());
+    
     IMSI imsi;
     imsi.print_IMSI();
     
     GTPv2 gtp;
     printf("Header: %lu\n", sizeof(gtp));
+    printf("header msg length: %u\n", gtp.m_header.get_msg_length());
     
     F_TEID f_teid;
     f_teid.print_IP();
