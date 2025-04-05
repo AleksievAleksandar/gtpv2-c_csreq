@@ -74,8 +74,8 @@ int main() {
     }
 
     Header h;
-    uint32_t teid {111116};
-    h.set_teid(&teid);
+    uint32_t teid {131116};
+    h.set_teid(teid);
 
     printf("Header: %lu length: %x\n", sizeof(h), h.m_msg_type);
     printf("Header: %lu length: %u\n", sizeof(h), h.get_teid());
@@ -90,6 +90,9 @@ int main() {
     printf("header msg length: %u\n", h.get_msg_length());
     
     IMSI imsi;
+    imsi.print_IMSI();
+    uint64_t aa {222010214146464};
+    imsi.set_imsi(aa);
     imsi.print_IMSI();
     
     GTPv2 gtp;

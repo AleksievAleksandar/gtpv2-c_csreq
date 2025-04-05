@@ -9,13 +9,13 @@ struct Header
     #define HEADER_SIZE 8
     Header();
 
-    void set_flags(void* p_flags);
-    void set_msg_type(void* p_msg_type);
+    void set_flags(uint8_t p_flags);
+    void set_msg_type(uint8_t p_msg_type);
 
-    void set_msg_length(void* p_length);
+    void set_msg_length(uint16_t p_length);
     uint16_t get_msg_length() const;
 
-    void set_teid(void* p_teid);
+    void set_teid(uint32_t p_teid);
     uint32_t get_teid() const;
 
     uint8_t m_flags;
@@ -29,7 +29,7 @@ struct Sequence_number
 {
     // Sequence Number & Spare (4 bytes)
     Sequence_number();
-    void set_sequence_number(void* p_seq_num);
+    void set_sequence_number(uint8_t p_seq_num);
 
     uint8_t m_sequence_number[3];
 private:
@@ -41,8 +41,8 @@ struct IMSI
 {
     // IMSI (International Mobile Subscriber Identity) IE (12 bytes)
     IMSI();
-    void set_imsi_ie_type(void* p_imsi_ie_type);
-    void set_imsi(void* p_imsi);
+    void set_imsi_ie_type(uint8_t p_imsi_ie_type);
+    void set_imsi(uint64_t p_imsi);
     void print_IMSI();
 
     uint8_t m_imsi_ie_type;

@@ -15,19 +15,19 @@ Header::Header()
     static_assert(sizeof(*this) == HEADER_SIZE);
 }
 
-void Header::set_flags(void* p_flags)
+void Header::set_flags(uint8_t p_flags)
 {
-    m_flags = *(uint8_t*)p_flags;
+    m_flags = p_flags;
 }
 
-void Header::set_msg_type(void* p_msg_type)
+void Header::set_msg_type(uint8_t p_msg_type)
 {
-    m_msg_type = *(uint8_t*)p_msg_type;
+    m_msg_type = p_msg_type;
 }
 
-void Header::set_msg_length(void* p_length)
+void Header::set_msg_length(uint16_t p_length)
 {
-    uint16_t l_transform_length{ htons(*(uint16_t*)p_length) };
+    uint16_t l_transform_length{ htons(p_length) };
     memcpy(m_msg_length, &l_transform_length, sizeof(m_msg_length));
 }
 
@@ -36,9 +36,9 @@ uint16_t Header::get_msg_length() const
     return ntohs((*(uint16_t*)&m_msg_length));
 }
 
-void Header::set_teid(void* p_teid)
+void Header::set_teid(uint32_t p_teid)
 {
-    memcpy(m_teid, p_teid, sizeof(m_teid));
+    memcpy(m_teid, &p_teid, sizeof(m_teid));
 }
 
 uint32_t Header::get_teid() const
@@ -55,9 +55,9 @@ Sequence_number::Sequence_number()
     , m_spare{ 0x00 }                        // Spare
 {}
 
-void Sequence_number::set_sequence_number(void* p_seq_num)
+void Sequence_number::set_sequence_number(uint8_t p_seq_num)
 {
-    memcpy(m_sequence_number, p_seq_num, sizeof(m_sequence_number));
+    memcpy(m_sequence_number, &p_seq_num, sizeof(m_sequence_number));
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -72,14 +72,28 @@ IMSI::IMSI()
 {
 }
 
-void IMSI::set_imsi_ie_type(void* p_imsi_ie_type)
+void IMSI::set_imsi_ie_type(uint8_t p_imsi_ie_type)
 {
-    m_imsi_ie_type = *(uint8_t*)p_imsi_ie_type;
+    m_imsi_ie_type = p_imsi_ie_type;
 }
 
-void IMSI::set_imsi(void* p_imsi)
+void IMSI::set_imsi(uint64_t p_imsi)
 {
-    memcpy(m_imsi, p_imsi, sizeof(m_imsi));
+        // Convert the IMSI number to a string of digits
+        char l_imsi_str[16] = { 0 }; // Max 15 digits + null terminator
+        snprintf(l_imsi_str, sizeof(l_imsi_str), "%llu", static_cast<unsigned long long>(p_imsi));
+
+        size_t l_len = strlen(l_imsi_str);
+        memset(m_imsi, 0xFF, sizeof(m_imsi)); // Fill with padding (0xFF = 0xF | 0xF)
+
+        for (size_t i = 0; i < l_len; i += 2)
+        {
+            uint8_t first_digit = l_imsi_str[i] - '0';
+            uint8_t second_digit = (i + 1 < l_len) ? (l_imsi_str[i + 1] - '0') : 0xF;
+
+            // Lower nibble: first digit, Upper nibble: second digit
+            m_imsi[i / 2] = (second_digit << 4) | first_digit;
+        }
 }
 
 void IMSI::print_IMSI()
@@ -457,7 +471,7 @@ GTPv2::GTPv2()
         + sizeof(Aggregate_Max_Bit_Rate)
         + sizeof(Bearer_Ctx)
     };
-    m_header.set_msg_length(&l_msg_length_without_header);
+    m_header.set_msg_length(l_msg_length_without_header);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
