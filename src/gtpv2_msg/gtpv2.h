@@ -58,8 +58,8 @@ struct MSISDN
 {
     // IMSI (International Mobile Subscriber Identity) IE (12 bytes)
     MSISDN();
-    void set_msisdn_ie_type(void* p_msisdn_ie_type);
-    void set_msisdn(void* p_msisdn);
+    void set_msisdn_ie_type(uint8_t p_msisdn_ie_type);
+    void set_msisdn(uint64_t p_msisdn);
     void print_MSISDN();
 
     uint8_t m_msisdn_ie_type;
@@ -75,8 +75,8 @@ struct MEI
 {
     // IMSI (International Mobile Subscriber Identity) IE (12 bytes)
     MEI();
-    void set_mei_ie_type(void* p_mei_ie_type);
-    void set_mei(void* p_mei);
+    void set_mei_ie_type(uint8_t p_mei_ie_type);
+    void set_mei(uint64_t p_mei);
     void print_MEI();
 
     uint8_t m_mei_ie_type;
@@ -132,8 +132,10 @@ struct F_TEID
     // F-TEID for Control Plane (13 bytes)
     F_TEID();
     void set_interface_and_teid(void* p_interface_and_teid);
-    void set_ip(void* p_ip);
-    void print_IP();
+    void set_ip(uint8_t p_ip[4]);
+    void set_ip(const char* ip_str);
+    std::string get_ip_as_string() const;
+    void print_IP() const;
 
     uint8_t m_f_teid_ie_type;
     uint8_t m_f_teid_length[2];

@@ -127,14 +127,28 @@ MSISDN::MSISDN()
     , m_msisdn{ 0x79, 0x52, 0x95, 0x00, 0x00, 0x00, 0x00, 0xf0 } // MSISDN value
 {}
 
-void MSISDN::set_msisdn_ie_type(void* p_msisdn_ie_type)
+void MSISDN::set_msisdn_ie_type(uint8_t p_msisdn_ie_type)
 {
-    m_msisdn_ie_type = *(uint8_t*)p_msisdn_ie_type;
+    m_msisdn_ie_type = p_msisdn_ie_type;
 }
 
-void MSISDN::set_msisdn(void* p_msisdn)
+void MSISDN::set_msisdn(uint64_t p_msisdn)
 {
-    memcpy(m_msisdn, p_msisdn, sizeof(m_msisdn));
+    // Convert the MSISDN number to a string of digits
+    char l_msisdn_str[16] = { 0 }; // Max 15 digits + null terminator
+    snprintf(l_msisdn_str, sizeof(l_msisdn_str), "%llu", static_cast<unsigned long long>(p_msisdn));
+
+    size_t l_len = strlen(l_msisdn_str);
+    memset(m_msisdn, 0xFF, sizeof(m_msisdn)); // Fill with padding (0xFF = 0xF | 0xF)
+
+    for (size_t i = 0; i < l_len; i += 2)
+    {
+        uint8_t first_digit = l_msisdn_str[i] - '0';
+        uint8_t second_digit = (i + 1 < l_len) ? (l_msisdn_str[i + 1] - '0') : 0xF;
+
+        // Lower nibble: first digit, Upper nibble: second digit
+        m_msisdn[i / 2] = (second_digit << 4) | first_digit;
+    }
 }
 
 void MSISDN::print_MSISDN()
@@ -168,14 +182,28 @@ MEI::MEI()
     , m_mei{ 0x21, 0x43, 0x05, 0x01, 0x00, 0x00, 0x00, 0xf0 } // MEI value
 {}
 
-void MEI::set_mei_ie_type(void* p_mei_ie_type)
+void MEI::set_mei_ie_type(uint8_t p_mei_ie_type)
 {
-    m_mei_ie_type = *(uint8_t*)p_mei_ie_type;
+    m_mei_ie_type = p_mei_ie_type;
 }
 
-void MEI::set_mei(void* p_mei)
+void MEI::set_mei(uint64_t p_mei)
 {
-    memcpy(m_mei, p_mei, sizeof(m_mei));
+    // Convert the MEI number to a string of digits
+    char l_mei_str[16] = { 0 }; // Max 15 digits + null terminator
+    snprintf(l_mei_str, sizeof(l_mei_str), "%llu", static_cast<unsigned long long>(p_mei));
+
+    size_t l_len = strlen(l_mei_str);
+    memset(m_mei, 0xFF, sizeof(m_mei)); // Fill with padding (0xFF = 0xF | 0xF)
+
+    for (size_t i = 0; i < l_len; i += 2)
+    {
+        uint8_t first_digit = l_mei_str[i] - '0';
+        uint8_t second_digit = (i + 1 < l_len) ? (l_mei_str[i + 1] - '0') : 0xF;
+
+        // Lower nibble: first digit, Upper nibble: second digit
+        m_mei[i / 2] = (second_digit << 4) | first_digit;
+    }
 }
 
 void MEI::print_MEI()
@@ -224,8 +252,11 @@ RAT::RAT()
     , m_spare{ 0x00 } // Spare
     , m_rat{ 0x22, 0xf2 } // RAT Type Value
 {}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+
+///////////////////////////////////// FLAGS ////////////////////////////////////////////////////////////
 Flags::Flags()
     : m_flags_ie_type{ 0x10 } // Indication IE Type (0x10)
     , m_flags{ 0x52, 0x00, 0x01, 0x00, 0x06 } // Flags (various indicators)
@@ -253,14 +284,27 @@ void F_TEID::set_interface_and_teid(void* p_interface_and_teid)
     memcpy(m_interface_type_and_teid, p_interface_and_teid, sizeof(m_interface_type_and_teid));
 }
 
-void F_TEID::set_ip(void* p_ip)
+void F_TEID::set_ip(uint8_t p_ip[4])
 {
     memcpy(m_ip, p_ip, sizeof(m_ip));
 }
 
-void F_TEID::print_IP()
+void F_TEID::set_ip(const char* ip_str)
+{
+    inet_pton(AF_INET, ip_str, m_ip); // Converts string to binary IPv4
+}
+
+std::string F_TEID::get_ip_as_string() const
+{
+    char buffer[INET_ADDRSTRLEN]; // Enough to hold "255.255.255.255\0"
+    inet_ntop(AF_INET, m_ip, buffer, INET_ADDRSTRLEN);
+    return std::string(buffer);
+}
+
+void F_TEID::print_IP() const
 {
     // IPv4 address starts at byte 5
+    printf("IPv4: %u\n", *(uint32_t*)&m_ip);
     printf("IPv4 Address: %d.%d.%d.%d\n", m_ip[0], m_ip[1], m_ip[2], m_ip[3]);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -89,17 +89,21 @@ int main() {
     // h.set_msg_length(&a);
     printf("header msg length: %u\n", h.get_msg_length());
     
-    IMSI imsi;
-    imsi.print_IMSI();
-    uint64_t aa {222010214146464};
-    imsi.set_imsi(aa);
-    imsi.print_IMSI();
+    MEI m;
+    m.print_MEI();
+    uint64_t x {123456700000000};
+    m.set_mei(x);
+    m.print_MEI();
+
     
     GTPv2 gtp;
     printf("Header: %lu\n", sizeof(gtp));
     printf("header msg length: %u\n", gtp.m_header.get_msg_length());
     
     F_TEID f_teid;
+    f_teid.print_IP();
+    uint8_t ip[] {193, 192, 168, 11};
+    f_teid.set_ip(ip);
     f_teid.print_IP();
 
     APN apn;
