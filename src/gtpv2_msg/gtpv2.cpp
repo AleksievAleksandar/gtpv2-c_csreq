@@ -304,7 +304,7 @@ std::string F_TEID::get_ip_as_string() const
 void F_TEID::print_IP() const
 {
     // IPv4 address starts at byte 5
-    printf("IPv4: %u\n", *(uint32_t*)&m_ip);
+    printf("IPv4 as raw uint32_t: %u\n", *(uint32_t*)&m_ip);
     printf("IPv4 Address: %d.%d.%d.%d\n", m_ip[0], m_ip[1], m_ip[2], m_ip[3]);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
